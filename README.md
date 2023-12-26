@@ -206,3 +206,195 @@ Full set of services - [[Project NOVA - LoS]]
     1. Regularly update and maintain the VMs and tools.
     2. Explore possibilities for expanding or upgrading the lab.
     3. Stay updated with the latest cybersecurity trends and incorporate relevant changes into the lab.
+
+# NETWORK PLAN
+
+### ARCHITECTURE
+
+![image](https://github.com/syst3m5bul1y/Project-NOVA/assets/100330775/b56abc2e-b0cd-42bd-bd88-5047a81a1f29)
+
+### SUBNETTING & IP ALLOCATION
+
+#### Subnetting Strategy:
+
+- **Chosen Subnet**: `192.168.2.0/24`
+- **Purpose**: This subnet is selected to avoid conflict with the home network range and to provide sufficient address space for lab components.
+- **Subnet Size**: Offers up to 254 usable IP addresses, ample for the scale of this lab.
+
+#### IP Allocation:
+
+1. **Gateway VM**:
+    
+    - IP Address: `192.168.2.1`
+    - Role: Network router and firewall, DHCP, and DNS services.
+
+2. **WebServer VM**:
+    
+    - IP Address: `192.168.2.10`
+    - Role: Hosting web applications and services.
+    - IP reserved.
+
+3. **MailHost VM**:
+    
+    - IP Address: `192.168.2.20`
+    - Role: Simulating email server for email security practices.
+
+4. **LDAPhost VM**:
+    
+    - IP Address: `192.168.2.30`
+    - Role: Providing directory services for LDAP integration and security testing.
+
+5. **SIEM System VM**:
+    
+    - IP Address: `192.168.2.40`
+    - Role: Log collection, monitoring, and analysis.
+    - IP reserved.
+
+6. **Kali Linux VM**:
+    
+    - IP Address: `192.168.2.50`
+    - Role: Penetration testing and security assessments.
+
+7. **Ubuntu Desktop VM**:
+    
+    - IP Address: `192.168.2.60`
+    - Role: General-purpose Linux environment.
+
+#### DHCP and Static IP Strategy:
+
+- **Dynamic IP Assignment**: For certain VMs where fixed IPs are not critical, a DHCP service (from the Gateway VM) can be used for dynamic IP allocation.
+
+- **Static IP Reservation**: Key VMs like the Gateway, WebServer, MailHost, LDAPhost, and SIEM System will have static IPs for consistent network configuration and easier management.
+
+#### Network Segmentation (Future Consideration):
+
+- Potential to segment the network further for specialized purposes, such as creating isolated subnets for testing specific security scenarios.
+
+
+### NETWORK SERVICES CONFIGURATIONS & SPECIFICATION
+
+#### Overview:
+
+Configuring network services effectively is crucial for the functionality and security of Project NOVA's lab environment. These services are mainly managed by the Gateway VM, providing centralized control and simplified administration.
+
+#### DHCP (Dynamic Host Configuration Protocol) Configuration:
+
+- **Service Host**: Gateway VM.
+- **Role**: Automatically assigns IP addresses and other network parameters to VMs.
+- **Configuration Details**:
+    - DHCP Range: `192.168.2.100` to `192.168.2.200` for dynamic allocation.
+    - Lease Time: Set per lab testing requirements (default 24 hours).
+    - DHCP Options: Default gateway (`192.168.2.1`), DNS server settings, etc.
+
+#### DNS (Domain Name System) Configuration:
+
+- **Service Host**: Gateway VM.
+- **Role**: Resolves domain names into IP addresses.
+- **Configuration Details**:
+    - Primary DNS: Configured for both internal lab hostnames and external domains.
+    - Forwarders: Optional external DNS servers (e.g., 1.1.1.1 or 8.8.8.8) for external queries.
+
+#### Firewall Configuration:
+
+- **Service Host**: Gateway VM.
+- **Role**: Regulates network traffic based on predefined security rules.
+- **Configuration Details**:
+    - Default Policy: Deny all incoming traffic not matching a rule.
+    - Specific Rules: Allow necessary inbound/outbound traffic for each VM.
+
+#### NTP (Network Time Protocol) Configuration:
+
+- **Service Host**: Gateway VM.
+- **Role**: Synchronizes time across all VMs and network devices.
+- **Configuration Details**:
+    - Install NTP service (e.g., `sudo apt install ntp` for Ubuntu/Debian).
+    - Edit `/etc/ntp.conf` to specify NTP servers.
+    - Adjust firewall to allow NTP traffic (port 123 UDP).
+    - Set Gateway VM as the primary NTP server for other VMs.
+
+#### SNMPv3 Configuration:
+
+- **Service Host**: Gateway VM.
+- **Role**: Provides secure network management and monitoring capabilities.
+- **Configuration Details**:
+    - Install SNMPv3 tools (e.g., `sudo apt-get install snmpd` for Ubuntu/Debian).
+    - Configure `/etc/snmp/snmpd.conf` with secure users, authentication, and encryption settings.
+    - Adjust firewall to allow SNMP traffic (default port 161/UDP).
+    - Use SNMPv3 for secure communication between agents and the manager.
+    - Set up agents on individual VMs and a central SNMP manager for comprehensive monitoring.
+
+#### Additional Services:
+
+- **VPN Server (Future Consideration)**: For secure remote lab access.
+
+#### Monitoring and Management Tools:
+
+- Tools like Nagios or Zabbix for network monitoring and alerting.
+- Command-line tools (e.g., `iftop`, `nmap`) for real-time network monitoring.
+
+
+### GATEWAY VM CONFIGURATIONS
+
+#### Overview:
+
+The Gateway VM serves as the central node of the Project NOVA network. It handles various critical functions, including traffic routing, security enforcement, and network service management.
+
+#### Roles and Responsibilities:
+
+- **Primary Network Router**: Manages and directs traffic between the lab network and external networks.
+- **Security Enforcement Point**: Implements firewall rules to regulate inbound and outbound traffic, ensuring network security.
+- **Service Provider**: Hosts essential network services such as DHCP, DNS, NTP, and SNMPv3.
+
+#### Specific Configuration Details:
+
+1. **Operating System**:
+    
+    - Recommended OS: Slackware Linux or Ubuntu Server for stability and control.
+    - Update and secure the OS with the latest patches and security configurations.
+
+2. **Network Interfaces**:
+    
+    - At least two network interfaces: one connecting to the external network (e.g., your home network) and the other to the internal lab network.
+    - Assign appropriate IP addresses aligning with the network plan (e.g., External: DHCP-assigned, Internal: `192.168.2.1`).
+
+3. **DHCP Server**:
+    
+    - Assigns IP addresses within the `192.168.2.0/24` range to lab VMs.
+    - Configure options for default gateway, subnet mask, and DNS.
+
+4. **DNS Server**:
+    
+    - Resolves both internal and external domain name queries.
+    - Optionally configure forwarders for external domain resolution.
+
+5. **Firewall Configuration**:
+    
+    - Implement iptables or nftables rules for packet filtering and NAT (Network Address Translation).
+    - Define rules to allow necessary traffic and block unwanted access.
+
+6. **NTP Service**:
+    
+    - Synchronizes time across all lab devices.
+    - Configured to connect to reliable external NTP servers and act as the NTP server for internal lab VMs.
+
+7. **SNMPv3 Agent**:
+    
+    - Secure configuration for network monitoring and management.
+    - Set up with robust authentication and encryption settings.
+
+8. **Routing and Network Management**:
+    
+    - Ensure proper routing between the internal and external networks.
+    - Manage network settings to optimize performance and reliability.
+
+9. **Logging and Monitoring**:
+    
+    - Configure system logging to track and record network and system events.
+    - Use monitoring tools for real-time network visibility.
+
+#### Security Considerations:
+
+- Regularly update and patch the OS and services.
+- Employ strong firewall rules and monitor logs for any unusual activities.
+- Use secure protocols and authentication methods for all services.
+
