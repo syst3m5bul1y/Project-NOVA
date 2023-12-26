@@ -398,3 +398,343 @@ The Gateway VM serves as the central node of the Project NOVA network. It handle
 - Employ strong firewall rules and monitor logs for any unusual activities.
 - Use secure protocols and authentication methods for all services.
 
+# VM CONFIGURATIONS
+
+### Gateway VM Configuration
+
+1. **OS Choice**: Slackware Linux.
+    
+    - **Reasoning**: Offers advanced control and is suited for learning in-depth Linux administration.
+
+2. **Resource Allocation**:
+    
+    - **CPU**: 2 Cores.
+    - **RAM**: 2 GB.
+    - **Disk Space**: 20 GB.
+
+3. **Primary Role**:
+    
+    - Network routing and management.
+    - Firewall, DHCP, DNS, NTP, and SNMP agent functionalities.
+
+4. **Software and Tools**:
+    
+    - **Firewall**: iptables/nftables for network packet filtering and NAT.
+    - **DHCP Server**: ISC DHCP server for dynamic IP address allocation.
+    - **DNS Service**: BIND for domain name resolution within the lab network.
+    - **NTP Service**: Chrony or ntpd for network time synchronization.
+    - **SNMP Agent**: NET-SNMP for network management information sharing.
+
+5. **Network Adapter Settings**:
+    
+    - **Adapter 1**: Bridged mode, connecting to the external network for Internet access.
+    - **Adapter 2**: Custom VMnet, for internal lab network communication.
+  
+### Mail Server VM Configuration
+
+1. **OS Choice**: Debian - minimal.
+    
+    - **Reasoning**: Known for its stability and efficiency, Debian is well-suited for running a reliable mail server.
+
+2. **Resource Allocation**:
+    
+    - **CPU**: 2 Cores.
+    - **RAM**: 2 GB.
+    - **Disk Space**: 30 GB (additional space may be allocated for email storage).
+
+3. **Primary Role**:
+    
+    - Hosting and managing email communication within the lab network.
+
+4. **Software and Tools**:
+    
+    - **Mail Transfer Agent (MTA)**: Postfix, for handling outgoing and incoming emails.
+    - **Mail Delivery Agent (MDA)**: Dovecot, for accessing and storing mails.
+    - **Spam Filtering**: SpamAssassin, for identifying and filtering spam emails.
+    - **Virus Scanning**: ClamAV, for detecting viruses in email attachments.
+    - **Webmail Interface** (Optional): Roundcube or SquirrelMail for accessing emails via a web browser.
+
+5. **Network Adapter Settings**:
+    
+    - **Adapter**: Custom VMnet, ensuring the mail server is part of the internal lab network and accessible by other VMs.
+
+   ### LDAP Server VM Configuration
+
+1. **OS Choice**: CentOS.
+    
+    - **Reasoning**: CentOS is known for its stability and enterprise-level features, making it a suitable choice for directory services and identity management.
+
+2. **Resource Allocation**:
+    
+    - **CPU**: 2 Cores.
+    - **RAM**: 2 GB.
+    - **Disk Space**: 20 GB.
+
+3. **Primary Role**:
+    
+    - Managing user identities, authentication, and directory services within the lab network.
+
+4. **Software and Tools**:
+    
+    - **LDAP Service**: OpenLDAP, for providing directory services.
+    - **LDAP Management Tools**: phpLDAPadmin for a web-based LDAP management interface (optional).
+    - **Security Tools**: Appropriate firewall settings (firewalld or iptables) and SELinux for enhanced security.
+
+5. **Network Adapter Settings**:
+    
+    - **Adapter**: Custom VMnet99, ensuring the LDAP server is integrated into your internal lab network and accessible by other VMs on the same network.
+
+   ### Web Server VM Configuration
+
+1. **OS Choice**: Ubuntu Server.
+    
+    - **Reasoning**: Ubuntu Server is user-friendly and widely used, making it a suitable choice for hosting web applications, especially for those who are familiar with Ubuntu's ecosystem.
+
+2. **Resource Allocation**:
+    
+    - **CPU**: 2 Cores.
+    - **RAM**: 2 GB.
+    - **Disk Space**: 30 GB (consider more if expecting high web content volume).
+
+3. **Primary Role**:
+    
+    - Hosting and serving web pages or applications within the lab network.
+
+4. **Software and Tools**:
+    
+    - **Web Server Software**: Apache or Nginx, popular choices for serving web content.
+    - **Database Management System**: MySQL or PostgreSQL, for backend database support if needed.
+    - **Scripting Languages**: PHP, Python, or others, depending on the web application requirements.
+    - **Additional Tools**: SSL/TLS certificates (self-signed for lab purposes), Content Management System (CMS) like WordPress (optional), and security tools like ModSecurity (for Apache) or Fail2Ban.
+
+5. **Network Adapter Settings**:
+    
+    - **Adapter**: Custom VMnet99, aligning with your internal lab network configuration, and ensuring that the web server is accessible by other VMs within the same network.
+
+   ### SNMP Manager Server VM Configuration
+
+1. **OS Choice**: Ubuntu Server.
+    
+    - **Reasoning**: Known for its user-friendliness and robustness, ideal for running network management and monitoring tools.
+
+2. **Resource Allocation**:
+    
+    - **CPU**: 2 Cores.
+    - **RAM**: 2 GB.
+    - **Disk Space**: 30 GB.
+
+3. **Primary Role**:
+    
+    - Central management and monitoring of network devices and VMs using SNMP.
+
+4. **Software and Tools**:
+    
+    - **SNMP Management Tool**: Zabbix, Nagios, or Cacti (choose based on preference).
+    - **SNMPv3 Configuration**: For secure communication with SNMP agents.
+
+5. **Network Adapter Settings**:
+    
+    - **Adapter**: Custom VMnet99, ensuring connectivity with all lab VMs for effective SNMP management.
+
+   # VM SPECIFIC SECURITY CONFIGURATIONS
+
+   VM SPECIFIC SECURITY CONFIGURATIONS
+
+
+#### Gateway VM
+
+1. **Operating System Hardening**:
+    
+    - Ensure only necessary services are running.
+    - Regularly update the Slackware Linux system to patch vulnerabilities.
+    - Disable root login over SSH and use key-based authentication.
+
+2. **Firewall Configuration**:
+    
+    - Implement a strict iptables or nftables rule set.
+    - Allow traffic on essential ports only (e.g., 22 for SSH, 53 for DNS, 80/443 for HTTP/HTTPS if needed).
+    - Drop all inbound traffic that does not match defined rules.
+    - Configure NAT for internal VMs to access external networks.
+
+3. **Intrusion Detection and Prevention**:
+    
+    - Deploy Suricata with rulesets tailored to detect and possibly block known attack patterns.
+    - Regularly update Suricata rules.
+
+4. **Network Services Security**:
+    
+    - Secure the DHCP and DNS services by restricting updates to authorized users and machines.
+    - Implement rate limiting on DHCP and DNS to mitigate DDoS attacks.
+    - Configure NTP securely to avoid misuse of your server in NTP amplification attacks.
+
+5. **Logging and Monitoring**:
+    
+    - Enable and configure logging for all critical services (firewall, DHCP, DNS, NTP, etc.).
+    - Forward logs to a centralized logging server for analysis and retention.
+
+6. **SNMP Configuration**:
+    
+    - Use SNMPv3 for its enhanced security features.
+    - Restrict SNMP access to specific management IPs.
+
+
+
+#### Mail Server VM
+
+1. **Operating System Hardening**:
+    
+    - Regularly update Debian to ensure all security patches are applied.
+    - Disable unused services and ports.
+    - Implement strong user password policies and use SSH key-based authentication.
+
+2. **Firewall Configuration**:
+    
+    - Configure UFW (Uncomplicated Firewall) to allow only mail-related ports: SMTP (25, 587), IMAP (143, 993), and POP3 (110, 995).
+    - Block all other inbound ports not used by mail services.
+    - Implement rate limiting for SMTP to prevent spamming activities.
+
+3. **Mail Server Security**:
+    
+    - Use Postfix and Dovecot with secure configurations to prevent unauthorized access.
+    - Implement spam filtering with SpamAssassin and virus scanning with ClamAV to protect against malicious emails.
+    - Enable SSL/TLS for all mail services to ensure encrypted communication.
+
+4. **Authentication and Access Control**:
+    
+    - Enforce strong authentication mechanisms in Dovecot.
+    - Use SASL (Simple Authentication and Security Layer) in Postfix for secure authentication.
+
+5. **Logging and Monitoring**:
+    
+    - Enable comprehensive logging for Postfix, Dovecot, SpamAssassin, and ClamAV.
+    - Regularly review logs for signs of unusual activities or attempted breaches.
+    - Forward logs to a centralized server for better analysis and archiving.
+
+6. **Backup and Recovery**:
+    
+    - Implement regular backups of email data and server configurations.
+    - Test restore procedures to ensure data can be recovered in the event of a failure or breach.
+
+#### LDAP Server VM
+
+1. **Operating System Hardening**:
+    
+    - Regularly update CentOS to apply security patches.
+    - Disable unnecessary services and ports not required for LDAP operations.
+    - Use SSH key-based authentication and disable root login over SSH.
+
+2. **Firewall Configuration**:
+    
+    - Configure firewalld to allow only LDAP-related ports: 389 for LDAP and 636 for LDAPS (LDAP over SSL).
+    - Deny all other inbound traffic not explicitly required for LDAP services.
+
+3. **LDAP Service Security**:
+    
+    - Configure OpenLDAP to use strong encryption with LDAPS or StartTLS to protect the communication.
+    - Implement access controls within OpenLDAP to restrict data access based on roles and need-to-know basis.
+
+4. **Authentication and Access Control**:
+    
+    - Use strong password policies for LDAP accounts.
+    - Regularly review and update access permissions to ensure they adhere to the principle of least privilege.
+
+5. **Logging and Monitoring**:
+    
+    - Enable detailed logging for OpenLDAP activities.
+    - Regularly monitor logs for unauthorized access attempts or unusual activities.
+    - Forward logs to a centralized logging server for analysis and long-term storage.
+
+6. **Backup and Recovery**:
+    
+    - Regularly backup LDAP directory data and configuration files.
+    - Verify backup integrity and test restoration processes periodically.
+
+7. **Security Enhancements**:
+    
+    - Consider implementing Multi-Factor Authentication (MFA) for sensitive accounts.
+    - Regularly audit and review LDAP entries and configurations for security risks.
+
+#### SNMP Server VM
+
+1. **Operating System Hardening**:
+    
+    - Regularly update Ubuntu Server to incorporate the latest security patches.
+    - Disable unnecessary services and close unused ports.
+    - Implement SSH key-based authentication and disable root login over SSH.
+
+2. **Firewall Configuration**:
+    
+    - Use UFW (Uncomplicated Firewall) to allow only SNMP-related ports, typically UDP 161 for SNMP queries.
+    - Block all other inbound traffic that is not essential for SNMP operations.
+
+3. **SNMP Service Security**:
+    
+    - Configure SNMPv3, which provides enhanced security features including authentication and encryption.
+    - Use complex passwords and encryption keys for SNMPv3 users.
+    - Limit SNMP access to only specific management IPs within your lab network.
+
+4. **Monitoring and Access Control**:
+    
+    - Regularly monitor SNMP traffic for any unusual patterns or spikes in activity that may indicate a security issue.
+    - Implement strict access controls on the SNMP management tools like Zabbix or Nagios, ensuring only authorized users have access.
+
+5. **Logging and Alerting**:
+    
+    - Enable detailed logging of SNMP activities.
+    - Set up alerts for critical events or anomalies detected through SNMP monitoring.
+    - Forward logs to a centralized logging server for comprehensive analysis and record-keeping.
+
+6. **Backup and Recovery**:
+    
+    - Regularly backup the SNMP configuration and the monitoring database.
+    - Test restoration procedures to ensure you can recover in case of failure.
+
+7. **Update and Patch Management**:
+    
+    - Keep the SNMP management software up to date with the latest releases and patches.
+
+#### Web Server VM
+
+1. **Operating System Hardening**:
+    
+    - Keep Ubuntu Server updated with the latest security patches.
+    - Disable unnecessary services and ports not required for web hosting.
+    - Use SSH key-based authentication and disable root login over SSH.
+
+2. **Firewall Configuration**:
+    
+    - Configure UFW to allow only web traffic on ports 80 (HTTP) and 443 (HTTPS).
+    - Implement rate limiting on these ports to mitigate the risk of DDoS attacks.
+    - Block all other unnecessary inbound traffic.
+
+3. **Web Service Security**:
+    
+    - Use Apache or Nginx with secure configurations, including disabling unnecessary modules.
+    - Implement SSL/TLS certificates for HTTPS, using Let's Encrypt for free certificates.
+    - Set up proper directory permissions and ownership.
+
+4. **Application-Level Security**:
+    
+    - If running CMS (e.g., WordPress, Joomla), keep it and its plugins/themes updated.
+    - Implement security plugins or modules within the CMS for added protection.
+    - Use strong passwords for CMS admin accounts and consider two-factor authentication.
+
+5. **Database Security** (if applicable):
+    
+    - Secure database access by binding to localhost and using strong passwords.
+    - Regularly update and patch the database management system.
+    - Perform regular backups of the database.
+
+6. **Logging and Monitoring**:
+    
+    - Enable extensive logging for the web server and review logs regularly.
+    - Use tools like Fail2Ban to ban IPs that show malicious behavior.
+    - Forward logs to a centralized server for analysis and archiving.
+
+7. **Backup and Recovery**:
+    
+    - Implement a regular backup schedule for website data and configurations.
+    - Verify backups and test restoration processes to ensure data integrity.
+  
+   
+
